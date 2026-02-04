@@ -153,31 +153,16 @@
             gap: 1rem;
         }
 
-        .logo-circle {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #7fb069 0%, #a8d08d 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
+        .logo-image {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
             animation: pulse 2s ease-in-out infinite;
         }
 
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
-        }
-
-        .logo-slice {
-            width: 20px;
-            height: 35px;
-            background: #e8f5e3;
-            border-radius: 0 100% 100% 0;
-            position: absolute;
-            left: 8px;
         }
 
         .logo-text {
@@ -649,9 +634,9 @@
     <div class="agora-container" id="mainContent">
         <div class="header">
             <div class="logo-container">
-                <div class="logo-circle">
-                    <div class="logo-slice"></div>
-                </div>
+                <img src="https://raw.githubusercontent.com/urceduhelp/agora/main/Eduhelp-Turn%20to%20change_WAps_2026-01.png" 
+                     alt="Agora Logo" 
+                     class="logo-image">
                 <div class="logo-text">
                     <div class="logo-main">Agora</div>
                     <div class="logo-sub">Edu-chat platform</div>

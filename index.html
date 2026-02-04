@@ -818,20 +818,57 @@
         };
 
         let autoSyncInterval = null;
+        let selectedWriter = null; // Track selected writer for filtering
+        let allPosts = []; // Store all posts for filtering
 
-        // Auto-sync every 15 minutes
+        // Session Storage Functions
+        function saveSession() {
+            sessionStorage.setItem('agora_session', JSON.stringify({
+                ac_name: currentUser.ac_name,
+                usser_name: currentUser.usser_name,
+                password: currentUser.password,
+                timestamp: new Date().getTime()
+            }));
+        }
+
+        function loadSession() {
+            const session = sessionStorage.getItem('agora_session');
+            if (session) {
+                try {
+                    const data = JSON.parse(session);
+                    // Check if session is still valid (optional: add expiry logic)
+                    if (data.usser_name && data.password) {
+                        currentUser = {
+                            ac_name: data.ac_name,
+                            usser_name: data.usser_name,
+                            password: data.password
+                        };
+                        return true;
+                    }
+                } catch (e) {
+                    console.error('Error loading session:', e);
+                }
+            }
+            return false;
+        }
+
+        function clearSession() {
+            sessionStorage.removeItem('agora_session');
+        }
+
+        // Auto-sync every 30 minutes
         function startAutoSync() {
             // Clear any existing interval
             if (autoSyncInterval) {
                 clearInterval(autoSyncInterval);
             }
             
-            // Set new interval for 15 minutes (900000 milliseconds)
+            // Set new interval for 30 minutes (1800000 milliseconds)
             autoSyncInterval = setInterval(() => {
                 console.log('Auto-syncing posts and writers...');
                 loadPosts();
                 loadWriters();
-            }, 900000); // 15 minutes
+            }, 1800000); // 30 minutes
         }
 
         function stopAutoSync() {
@@ -947,6 +984,9 @@
         }
 
         function completeLogin() {
+            // Save session
+            saveSession();
+            
             document.getElementById('loginModal').classList.remove('active');
             document.getElementById('mainContent').classList.add('active');
             document.getElementById('currentUserDisplay').textContent = currentUser.usser_name;
@@ -956,7 +996,7 @@
             
             // Start auto-sync
             startAutoSync();
-            console.log('Auto-sync started - will refresh every 15 minutes');
+            console.log('Auto-sync started - will refresh every 30 minutes');
         }
 
         function handleLogout() {
@@ -964,7 +1004,13 @@
             stopAutoSync();
             console.log('Auto-sync stopped');
             
+            // Clear session
+            clearSession();
+            
             currentUser = { ac_name: '', usser_name: '', password: '' };
+            selectedWriter = null;
+            allPosts = [];
+            
             document.getElementById('mainContent').classList.remove('active');
             document.getElementById('loginModal').classList.add('active');
             document.getElementById('loginUsername').value = '';
@@ -990,7 +1036,7 @@
             }
         }
 
-        // Load Writers
+        // Load Writers with click handlers
         async function loadWriters() {
             try {
                 const { data, error } = await supabaseClient
@@ -1012,16 +1058,41 @@
 
                 uniqueWriters.forEach(writer => {
                     const writerItem = document.createElement('div');
-                    writerItem.className = 'writer-item' + (writer === currentUser.ac_name ? ' active' : '');
+                    const isCurrentUser = writer === currentUser.ac_name;
+                    const isSelected = selectedWriter === writer;
+                    
+                    writerItem.className = 'writer-item' + 
+                        (isCurrentUser ? ' active' : '') + 
+                        (isSelected && !isCurrentUser ? ' active' : '');
+                    
                     writerItem.innerHTML = `
-                        ${writer === currentUser.ac_name ? '<span class="writer-dot"></span>' : ''}
+                        ${isCurrentUser ? '<span class="writer-dot"></span>' : ''}
                         <span>${writer}</span>
                     `;
+                    
+                    // Add click handler to filter posts by writer
+                    writerItem.onclick = () => filterByWriter(writer);
+                    
                     writersList.appendChild(writerItem);
                 });
             } catch (error) {
                 console.error('Error loading writers:', error);
             }
+        }
+
+        // Filter posts by writer
+        function filterByWriter(writer) {
+            if (selectedWriter === writer) {
+                // Unselect if clicking the same writer
+                selectedWriter = null;
+                displayPosts(allPosts);
+            } else {
+                // Select new writer and filter
+                selectedWriter = writer;
+                const filtered = allPosts.filter(post => post.ac_name === writer);
+                displayPosts(filtered);
+            }
+            loadWriters(); // Refresh writers list to update highlighting
         }
 
         // Load Posts
@@ -1035,21 +1106,39 @@
 
                 if (error) throw error;
 
-                const postsContainer = document.getElementById('postsContainer');
-                postsContainer.innerHTML = '';
+                allPosts = data; // Store all posts
 
-                if (data.length === 0) {
-                    postsContainer.innerHTML = '<div class="loading">තවම posts නැහැ. පළමු post එක ඔබ ලියන්න!</div>';
-                    return;
+                if (selectedWriter) {
+                    // If a writer is selected, filter posts
+                    const filtered = data.filter(post => post.ac_name === selectedWriter);
+                    displayPosts(filtered);
+                } else {
+                    // Otherwise show all posts
+                    displayPosts(data);
                 }
-
-                data.forEach(post => {
-                    renderPost(post);
-                });
             } catch (error) {
                 console.error('Error loading posts:', error);
                 document.getElementById('postsContainer').innerHTML = '<div class="loading">Error loading posts</div>';
             }
+        }
+
+        // Display posts in the container
+        function displayPosts(posts) {
+            const postsContainer = document.getElementById('postsContainer');
+            postsContainer.innerHTML = '';
+
+            if (posts.length === 0) {
+                if (selectedWriter) {
+                    postsContainer.innerHTML = `<div class="loading">${selectedWriter} විසින් තවම posts නැහැ</div>`;
+                } else {
+                    postsContainer.innerHTML = '<div class="loading">තවම posts නැහැ. පළමු post එක ඔබ ලියන්න!</div>';
+                }
+                return;
+            }
+
+            posts.forEach(post => {
+                renderPost(post);
+            });
         }
 
         function renderPost(post) {
@@ -1439,7 +1528,7 @@
                     .update({ commnet: JSON.stringify(comments) })
                     .eq('id', postId);
 
-                if (updateError) throw deleteError;
+                if (updateError) throw updateError;
 
                 alert('✅ Comment එක සාර්ථකව delete විය!');
                 loadPosts();
@@ -1549,8 +1638,15 @@
             return div.innerHTML;
         }
 
-        // Allow Enter key to submit login
+        // On page load, check for existing session
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for existing session
+            if (loadSession()) {
+                console.log('Session found, auto-logging in...');
+                completeLogin();
+            }
+            
+            // Allow Enter key to submit login
             document.getElementById('loginPassword').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     handleLogin();

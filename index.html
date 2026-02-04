@@ -552,14 +552,14 @@
             font-size: 1.1rem;
         }
 
-        /* Hidden PDF render area */
+        /* Hidden PDF render area - improved for multi-page support */
         .pdf-render {
             position: fixed;
             left: -9999px;
             top: 0;
             background: white;
             padding: 40px;
-            width: 800px;
+            width: 750px;
         }
 
         .pdf-render .pdf-title {
@@ -817,6 +817,30 @@
             password: ''
         };
 
+        let autoSyncInterval = null;
+
+        // Auto-sync every 15 minutes
+        function startAutoSync() {
+            // Clear any existing interval
+            if (autoSyncInterval) {
+                clearInterval(autoSyncInterval);
+            }
+            
+            // Set new interval for 15 minutes (900000 milliseconds)
+            autoSyncInterval = setInterval(() => {
+                console.log('Auto-syncing posts and writers...');
+                loadPosts();
+                loadWriters();
+            }, 900000); // 15 minutes
+        }
+
+        function stopAutoSync() {
+            if (autoSyncInterval) {
+                clearInterval(autoSyncInterval);
+                autoSyncInterval = null;
+            }
+        }
+
         // Track user likes/dislikes in localStorage
         function getUserLikes() {
             const likes = localStorage.getItem('agora_likes');
@@ -929,9 +953,17 @@
             loadPosts();
             loadWriters();
             deleteOldPosts();
+            
+            // Start auto-sync
+            startAutoSync();
+            console.log('Auto-sync started - will refresh every 15 minutes');
         }
 
         function handleLogout() {
+            // Stop auto-sync
+            stopAutoSync();
+            console.log('Auto-sync stopped');
+            
             currentUser = { ac_name: '', usser_name: '', password: '' };
             document.getElementById('mainContent').classList.remove('active');
             document.getElementById('loginModal').classList.add('active');
@@ -1060,7 +1092,7 @@
                     <button class="action-btn" onclick="scrollToComments(${post.id})">
                         💬 Comment
                     </button>
-                    <button class="action-btn" onclick="downloadPostAsPDF(${post.id})">
+                    <button class="action-btn" onclick="downloadPostAsPDF(event, ${post.id})">
                         📥 Download
                     </button>
                     ${ownerActions}
@@ -1280,7 +1312,7 @@
                 document.getElementById(`like-count-${postId}`).textContent = newLikeCount;
                 document.getElementById(`dislike-count-${postId}`).textContent = newDislikeCount;
                 
-                loadPosts(); // Refresh to show active state
+                loadPosts();
             } catch (error) {
                 console.error('Error updating like:', error);
             }
@@ -1326,7 +1358,7 @@
                 document.getElementById(`like-count-${postId}`).textContent = newLikeCount;
                 document.getElementById(`dislike-count-${postId}`).textContent = newDislikeCount;
                 
-                loadPosts(); // Refresh to show active state
+                loadPosts();
             } catch (error) {
                 console.error('Error updating dislike:', error);
             }
@@ -1407,7 +1439,7 @@
                     .update({ commnet: JSON.stringify(comments) })
                     .eq('id', postId);
 
-                if (updateError) throw updateError;
+                if (updateError) throw deleteError;
 
                 alert('✅ Comment එක සාර්ථකව delete විය!');
                 loadPosts();
@@ -1417,8 +1449,8 @@
             }
         }
 
-        // Download Post as PDF with proper Sinhala support
-        async function downloadPostAsPDF(postId) {
+        // Download Post as PDF with proper Sinhala support and multi-page handling
+        async function downloadPostAsPDF(event, postId) {
             try {
                 const { data: post, error } = await supabaseClient
                     .from('agora')
@@ -1427,6 +1459,12 @@
                     .single();
 
                 if (error) throw error;
+
+                // Show loading indicator
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '⏳ Creating PDF...';
+                btn.disabled = true;
 
                 // Create HTML for PDF rendering
                 const pdfArea = document.getElementById('pdfRenderArea');
@@ -1442,24 +1480,51 @@
                 const canvas = await html2canvas(pdfArea, {
                     scale: 2,
                     useCORS: true,
-                    logging: false
+                    logging: false,
+                    windowWidth: 750
                 });
 
                 const imgData = canvas.toDataURL('image/png');
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 
-                const imgWidth = 210; // A4 width in mm
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                const pageWidth = 210; // A4 width in mm
+                const pageHeight = 297; // A4 height in mm
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height * pageWidth) / canvas.width;
                 
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                // Add first page
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Add additional pages if content is longer than one page
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
                 pdf.save(`agora-post-${postId}.pdf`);
 
                 // Clear the render area
                 pdfArea.innerHTML = '';
+                
+                // Reset button
+                btn.textContent = originalText;
+                btn.disabled = false;
+                
+                alert('✅ PDF සාර්ථකව download විය!');
             } catch (error) {
                 console.error('Error downloading PDF:', error);
                 alert('PDF download කිරීමේදී දෝෂයක් සිදු විය');
+                if (event && event.target) {
+                    event.target.textContent = '📥 Download';
+                    event.target.disabled = false;
+                }
             }
         }
 

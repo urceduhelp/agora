@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agora - Edu-chat platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Noto+Sans+Sinhala:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans Sinhala', 'Cormorant Garamond', serif;
+            background: linear-gradient(135deg, #0a0f0d 0%, #1a2420 100%);
+            color: #e8f5e3;
+            min-height: 100vh;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a2420 0%, #0a0f0d 100%);
+            padding: 3rem;
+            border-radius: 20px;
+            max-width: 450px;
+            width: 90%;
+            border: 3px solid #7fb069;
+            box-shadow: 0 20px 60px rgba(127, 176, 105, 0.4);
+            animation: modalSlideIn 0.4s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            color: #7fb069;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 700;
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            background: rgba(10, 15, 13, 0.8);
+            border: 2px solid rgba(127, 176, 105, 0.4);
+            border-radius: 10px;
+            color: #e8f5e3;
+            font-size: 1.1rem;
+            font-family: 'Noto Sans Sinhala', serif;
+            transition: all 0.3s ease;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #7fb069;
+            box-shadow: 0 0 20px rgba(127, 176, 105, 0.5);
+        }
+
+        .modal-input::placeholder {
+            color: #a8d08d;
+            opacity: 0.7;
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #7fb069 0%, #a8d08d 100%);
+            color: #0a0f0d;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(127, 176, 105, 0.4);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(127, 176, 105, 0.6);
+        }
+
+        .modal-error {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 1rem;
+            font-weight: 600;
+            min-height: 24px;
+        }
+
+        .agora-container {
+            animation: fadeIn 0.8s ease-out;
+            display: none;
+        }
+
+        .agora-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .header {
+            background: linear-gradient(90deg, #000000 0%, #1a1a1a 100%);
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #7fb069;
+            box-shadow: 0 4px 20px rgba(127, 176, 105, 0.3);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7fb069 0%, #a8d08d 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .logo-slice {
+            width: 20px;
+            height: 35px;
+            background: #e8f5e3;
+            border-radius: 0 100% 100% 0;
+            position: absolute;
+            left: 8px;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .logo-main {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #7fb069;
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .logo-sub {
+            font-size: 0.9rem;
+            color: #a8d08d;
+            margin-top: -8px;
+            letter-spacing: 1px;
+        }
+
+        .user-info {
+            color: #a8d08d;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logout-btn {
+            margin-left: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(127, 176, 105, 0.2);
+            border: 1px solid #7fb069;
+            border-radius: 8px;
+            color: #7fb069;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(127, 176, 105, 0.4);
+        }
+
+        .banner {
+            background: linear-gradient(to right, #d4e09b, #f6f4d2);
+            padding: 1rem 3rem;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #2d3319;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 2rem;
+            padding: 2rem 3rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .sidebar {
+            background: rgba(26, 36, 32, 0.8);
+            border-radius: 15px;
+            padding: 2rem;
+            height: fit-content;
+            border: 2px solid rgba(127, 176, 105, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-title {
+            font-size: 1.5rem;
+            color: #7fb069;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            border-bottom: 2px solid #7fb069;
+            padding-bottom: 0.5rem;
+        }
+
+        .writer-item {
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .writer-item:hover {
+            background: rgba(127, 176, 105, 0.2);
+            transform: translateX(5px);
+        }
+
+        .writer-item.active {
+            background: rgba(127, 176, 105, 0.3);
+            border-left: 4px solid #7fb069;
+        }
+
+        .writer-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #7fb069;
+            display: inline-block;
+        }
+
+        .content-area {
+        }
+
+        .new-post-section {
+            background: rgba(26, 36, 32, 0.9);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px solid rgba(127, 176, 105, 0.4);
+            box-shadow: 0 8px 32px rgba(127, 176, 105, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #d4e09b;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: rgba(10, 15, 13, 0.6);
+            border: 2px solid rgba(127, 176, 105, 0.3);
+            border-radius: 10px;
+            color: #e8f5e3;
+            font-size: 1rem;
+            font-family: 'Noto Sans Sinhala', serif;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #7fb069;
+            box-shadow: 0 0 15px rgba(127, 176, 105, 0.4);
+        }
+
+        .input-field::placeholder {
+            color: #a8d08d;
+            opacity: 0.6;
+        }
+
+        textarea.input-field {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #7fb069 0%, #a8d08d 100%);
+            color: #0a0f0d;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 15px rgba(127, 176, 105, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(127, 176, 105, 0.5);
+        }
+
+        .post-card {
+            background: rgba(26, 36, 32, 0.9);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px solid rgba(127, 176, 105, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+        }
+
+        .post-card:hover {
+            border-color: #7fb069;
+            box-shadow: 0 12px 40px rgba(127, 176, 105, 0.3);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(127, 176, 105, 0.2);
+        }
+
+        .post-author {
+            font-size: 1rem;
+            color: #a8d08d;
+            font-weight: 600;
+        }
+
+        .post-date {
+            font-size: 0.9rem;
+            color: #7fb069;
+        }
+
+        .post-title {
+            font-size: 1.8rem;
+            color: #d4e09b;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .post-content {
+            color: #e8f5e3;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+            white-space: pre-wrap;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem 0;
+            border-top: 1px solid rgba(127, 176, 105, 0.2);
+            border-bottom: 1px solid rgba(127, 176, 105, 0.2);
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            background: rgba(127, 176, 105, 0.1);
+            border: 1px solid rgba(127, 176, 105, 0.3);
+            border-radius: 10px;
+            color: #7fb069;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(127, 176, 105, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.dislike {
+            color: #d08d8d;
+        }
+
+        .action-btn.active {
+            background: rgba(127, 176, 105, 0.3);
+            border-color: #7fb069;
+        }
+
+        .action-btn.delete {
+            color: #ff6b6b;
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+
+        .action-btn.edit {
+            color: #f0ad4e;
+            border-color: rgba(240, 173, 78, 0.3);
+        }
+
+        .comments-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+        }
+
+        .comment-item {
+            background: rgba(10, 15, 13, 0.4);
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            border-radius: 10px;
+            border-left: 3px solid #7fb069;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .comment-item:hover {
+            background: rgba(10, 15, 13, 0.6);
+            transform: translateX(5px);
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #a8d08d;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .comment-btn {
+            padding: 0.3rem 0.7rem;
+            background: rgba(127, 176, 105, 0.1);
+            border: 1px solid rgba(127, 176, 105, 0.3);
+            border-radius: 6px;
+            color: #7fb069;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .comment-btn:hover {
+            background: rgba(127, 176, 105, 0.2);
+        }
+
+        .comment-btn.delete {
+            color: #ff6b6b;
+            border-color: rgba(255, 107, 107, 0.3);
+        }
+
+        .comment-text {
+            color: #e8f5e3;
+            line-height: 1.6;
+        }
+
+        .add-comment {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .comment-input {
+            flex: 1;
+            padding: 0.8rem;
+            background: rgba(10, 15, 13, 0.6);
+            border: 2px solid rgba(127, 176, 105, 0.3);
+            border-radius: 10px;
+            color: #e8f5e3;
+            font-family: 'Noto Sans Sinhala', serif;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: #7fb069;
+        }
+
+        .btn-comment {
+            padding: 0.8rem 1.5rem;
+            background: #7fb069;
+            color: #0a0f0d;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-comment:hover {
+            background: #a8d08d;
+            transform: scale(1.05);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #7fb069;
+            font-size: 1.2rem;
+        }
+
+        /* Hidden PDF render area */
+        .pdf-render {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            background: white;
+            padding: 40px;
+            width: 800px;
+        }
+
+        .pdf-render .pdf-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+            margin-bottom: 30px;
+            font-family: 'Noto Sans Sinhala', sans-serif;
+        }
+
+        .pdf-render .pdf-topic {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            font-family: 'Noto Sans Sinhala', sans-serif;
+        }
+
+        .pdf-render .pdf-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+            font-family: 'Noto Sans Sinhala', sans-serif;
+        }
+
+        .pdf-render .pdf-content {
+            font-size: 16px;
+            color: #000;
+            line-height: 1.8;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: 'Noto Sans Sinhala', sans-serif;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .header {
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .banner {
+                padding: 0.8rem 1rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Modal -->
+    <div class="modal-overlay active" id="loginModal">
+        <div class="modal-content">
+            <div class="modal-title">🔐 Agora Login</div>
+            <input type="text" id="loginUsername" class="modal-input" placeholder="User Name" />
+            <input type="password" id="loginPassword" class="modal-input" placeholder="Password" />
+            <button class="modal-btn" onclick="handleLogin()">Login / Sign Up</button>
+            <div class="modal-error" id="loginError"></div>
+        </div>
+    </div>
+
+    <!-- Hidden PDF Render Area -->
+    <div id="pdfRenderArea" class="pdf-render"></div>
+
+    <!-- Main Content -->
+    <div class="agora-container" id="mainContent">
+        <div class="header">
+            <div class="logo-container">
+                <div class="logo-circle">
+                    <div class="logo-slice"></div>
+                </div>
+                <div class="logo-text">
+                    <div class="logo-main">Agora</div>
+                    <div class="logo-sub">Edu-chat platform</div>
+                </div>
+            </div>
+            <div class="user-info">
+                👤 <span id="currentUserDisplay"></span>
+                <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="banner">
+            New posts published in the last 28 days
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="sidebar-title">Writers</div>
+                <div id="writersList"></div>
+            </div>
+
+            <div class="content-area">
+                <div class="new-post-section">
+                    <div class="section-title">
+                        ➕ Add new post
+                    </div>
+                    <input
+                        type="text"
+                        class="input-field"
+                        id="newPostTitle"
+                        placeholder="Topic"
+                    />
+                    <textarea
+                        class="input-field"
+                        id="newPostContent"
+                        placeholder="add text...."
+                    ></textarea>
+                    <button class="btn-primary" onclick="addNewPost()">
+                        ➕ Publish Post
+                    </button>
+                </div>
+
+                <div id="postsContainer">
+                    <div class="loading">Loading posts...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Supabase
+        const { createClient } = supabase;
+        const supabaseClient = createClient(
+            'https://jcijglwpkfluyzrltimk.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjaWpnbHdwa2ZsdXl6cmx0aW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MzU3OTUsImV4cCI6MjA4MjQxMTc5NX0.dvT8OiyVEiYn_DhkMakmSq1Vvr4REDr0kYPnyqCtWHs'
+        );
+        
+        let currentUser = {
+            ac_name: '',
+            usser_name: '',
+            password: ''
+        };
+
+        // Track user likes/dislikes in localStorage
+        function getUserLikes() {
+            const likes = localStorage.getItem('agora_likes');
+            return likes ? JSON.parse(likes) : {};
+        }
+
+        function saveUserLike(postId, type) {
+            const likes = getUserLikes();
+            if (!likes[currentUser.usser_name]) {
+                likes[currentUser.usser_name] = {};
+            }
+            likes[currentUser.usser_name][postId] = type;
+            localStorage.setItem('agora_likes', JSON.stringify(likes));
+        }
+
+        function hasUserLiked(postId) {
+            const likes = getUserLikes();
+            return likes[currentUser.usser_name]?.[postId];
+        }
+
+        // Login Handler
+        async function handleLogin() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const errorDiv = document.getElementById('loginError');
+
+            if (!username || !password) {
+                errorDiv.textContent = 'කරුණාකර username සහ password ඇතුළත් කරන්න';
+                errorDiv.style.color = '#ff6b6b';
+                return;
+            }
+
+            errorDiv.textContent = 'Loading...';
+            errorDiv.style.color = '#7fb069';
+
+            try {
+                const { data: existingUsers, error: fetchError } = await supabaseClient
+                    .from('agora')
+                    .select('*')
+                    .eq('usser_name', username)
+                    .eq('password', password);
+
+                if (fetchError) {
+                    console.error('Fetch error:', fetchError);
+                    errorDiv.textContent = 'Database error: ' + fetchError.message;
+                    errorDiv.style.color = '#ff6b6b';
+                    return;
+                }
+
+                if (existingUsers && existingUsers.length > 0) {
+                    const user = existingUsers[0];
+                    currentUser = {
+                        ac_name: user.ac_name || username,
+                        usser_name: user.usser_name,
+                        password: user.password
+                    };
+                    errorDiv.textContent = '✅ Login successful!';
+                    errorDiv.style.color = '#7fb069';
+                    setTimeout(() => completeLogin(), 500);
+                } else {
+                    const { data: usernameCheck } = await supabaseClient
+                        .from('agora')
+                        .select('*')
+                        .eq('usser_name', username);
+
+                    if (usernameCheck && usernameCheck.length > 0) {
+                        errorDiv.textContent = '❌ වැරදි password! නැවත උත්සාහ කරන්න.';
+                        errorDiv.style.color = '#ff6b6b';
+                    } else {
+                        errorDiv.textContent = 'නව account එකක් create කරමින්...';
+                        errorDiv.style.color = '#7fb069';
+                        
+                        const { data: newUser, error: insertError } = await supabaseClient
+                            .from('agora')
+                            .insert([{
+                                ac_name: username,
+                                usser_name: username,
+                                password: password
+                            }])
+                            .select();
+
+                        if (insertError) {
+                            console.error('Insert error:', insertError);
+                            errorDiv.textContent = 'Account creation failed: ' + insertError.message;
+                            errorDiv.style.color = '#ff6b6b';
+                            return;
+                        }
+
+                        currentUser = {
+                            ac_name: username,
+                            usser_name: username,
+                            password: password
+                        };
+                        errorDiv.textContent = '✅ නව account එක සාර්ථකව create විය!';
+                        errorDiv.style.color = '#7fb069';
+                        setTimeout(() => completeLogin(), 500);
+                    }
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.textContent = 'දෝෂයක් සිදු විය: ' + error.message;
+                errorDiv.style.color = '#ff6b6b';
+            }
+        }
+
+        function completeLogin() {
+            document.getElementById('loginModal').classList.remove('active');
+            document.getElementById('mainContent').classList.add('active');
+            document.getElementById('currentUserDisplay').textContent = currentUser.usser_name;
+            loadPosts();
+            loadWriters();
+            deleteOldPosts();
+        }
+
+        function handleLogout() {
+            currentUser = { ac_name: '', usser_name: '', password: '' };
+            document.getElementById('mainContent').classList.remove('active');
+            document.getElementById('loginModal').classList.add('active');
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('loginError').textContent = '';
+        }
+
+        // Delete posts older than 28 days
+        async function deleteOldPosts() {
+            try {
+                const twentyEightDaysAgo = new Date();
+                twentyEightDaysAgo.setDate(twentyEightDaysAgo.getDate() - 28);
+
+                const { error } = await supabaseClient
+                    .from('agora')
+                    .delete()
+                    .lt('created_at', twentyEightDaysAgo.toISOString())
+                    .not('topic', 'is', null);
+
+                if (error) console.error('Error deleting old posts:', error);
+            } catch (error) {
+                console.error('Delete error:', error);
+            }
+        }
+
+        // Load Writers
+        async function loadWriters() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('agora')
+                    .select('ac_name')
+                    .not('topic', 'is', null)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const uniqueWriters = [...new Set(data.map(item => item.ac_name).filter(name => name))];
+                const writersList = document.getElementById('writersList');
+                writersList.innerHTML = '';
+
+                if (uniqueWriters.length === 0) {
+                    writersList.innerHTML = '<div style="color: #a8d08d; padding: 1rem;">තවම writers නැහැ</div>';
+                    return;
+                }
+
+                uniqueWriters.forEach(writer => {
+                    const writerItem = document.createElement('div');
+                    writerItem.className = 'writer-item' + (writer === currentUser.ac_name ? ' active' : '');
+                    writerItem.innerHTML = `
+                        ${writer === currentUser.ac_name ? '<span class="writer-dot"></span>' : ''}
+                        <span>${writer}</span>
+                    `;
+                    writersList.appendChild(writerItem);
+                });
+            } catch (error) {
+                console.error('Error loading writers:', error);
+            }
+        }
+
+        // Load Posts
+        async function loadPosts() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('agora')
+                    .select('*')
+                    .not('topic', 'is', null)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const postsContainer = document.getElementById('postsContainer');
+                postsContainer.innerHTML = '';
+
+                if (data.length === 0) {
+                    postsContainer.innerHTML = '<div class="loading">තවම posts නැහැ. පළමු post එක ඔබ ලියන්න!</div>';
+                    return;
+                }
+
+                data.forEach(post => {
+                    renderPost(post);
+                });
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                document.getElementById('postsContainer').innerHTML = '<div class="loading">Error loading posts</div>';
+            }
+        }
+
+        function renderPost(post) {
+            const postsContainer = document.getElementById('postsContainer');
+            const postCard = document.createElement('div');
+            postCard.className = 'post-card';
+            postCard.dataset.postId = post.id;
+
+            const timeAgo = getTimeAgo(post.created_at);
+            const isOwner = post.usser_name === currentUser.usser_name;
+            const userLikeStatus = hasUserLiked(post.id);
+
+            const ownerActions = isOwner ? `
+                <button class="action-btn edit" onclick="editPost(${post.id})">
+                    ✏️ Edit
+                </button>
+                <button class="action-btn delete" onclick="deletePost(${post.id})">
+                    🗑️ Delete
+                </button>
+            ` : '';
+
+            postCard.innerHTML = `
+                <div class="post-header">
+                    <div class="post-author">
+                        👤 ${escapeHtml(post.ac_name || 'Unknown')}
+                    </div>
+                    <div class="post-date">${timeAgo}</div>
+                </div>
+                
+                <div class="post-title" id="title-${post.id}">${escapeHtml(post.topic)}</div>
+                <div class="post-content" id="content-${post.id}">${escapeHtml(post.content)}</div>
+
+                <div class="post-actions">
+                    <button class="action-btn like ${userLikeStatus === 'like' ? 'active' : ''}" onclick="handleLike(${post.id})">
+                        👍 I Like <span id="like-count-${post.id}">${post.like || 0}</span>
+                    </button>
+                    <button class="action-btn dislike ${userLikeStatus === 'dislike' ? 'active' : ''}" onclick="handleDislike(${post.id})">
+                        👎 I Don't Like <span id="dislike-count-${post.id}">${post.d_like || 0}</span>
+                    </button>
+                    <button class="action-btn" onclick="scrollToComments(${post.id})">
+                        💬 Comment
+                    </button>
+                    <button class="action-btn" onclick="downloadPostAsPDF(${post.id})">
+                        📥 Download
+                    </button>
+                    ${ownerActions}
+                </div>
+
+                <div class="comments-section" id="comments-${post.id}">
+                    ${renderComments(post.commnet, post.id)}
+                    <div class="add-comment">
+                        <input
+                            type="text"
+                            class="comment-input"
+                            id="comment-input-${post.id}"
+                            placeholder="add comment"
+                        />
+                        <button class="btn-comment" onclick="addComment(${post.id})">
+                            Add
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            postsContainer.appendChild(postCard);
+        }
+
+        function renderComments(commentsJSON, postId) {
+            if (!commentsJSON) return '';
+            
+            try {
+                const comments = JSON.parse(commentsJSON);
+                if (!Array.isArray(comments) || comments.length === 0) return '';
+                
+                return comments.map((comment, idx) => {
+                    const isOwner = comment.author === currentUser.ac_name;
+                    const actions = isOwner ? `
+                        <div class="comment-actions">
+                            <button class="comment-btn delete" onclick="deleteComment(${postId}, ${idx})">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    ` : '';
+
+                    return `
+                        <div class="comment-item">
+                            <div class="comment-header">
+                                <div class="comment-author">${escapeHtml(comment.author || 'Anonymous')}</div>
+                                ${actions}
+                            </div>
+                            <div class="comment-text">${escapeHtml(comment.text || '')}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error('Error parsing comments:', e);
+                return '';
+            }
+        }
+
+        function scrollToComments(postId) {
+            const commentsSection = document.getElementById(`comments-${postId}`);
+            commentsSection.scrollIntoView({ behavior: 'smooth' });
+            setTimeout(() => {
+                document.getElementById(`comment-input-${postId}`).focus();
+            }, 500);
+        }
+
+        // Add New Post
+        async function addNewPost() {
+            const title = document.getElementById('newPostTitle').value.trim();
+            const content = document.getElementById('newPostContent').value.trim();
+
+            if (!title || !content) {
+                alert('කරුණාකර මාතෘකාව සහ අන්තර්ගතය ඇතුළත් කරන්න');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('agora')
+                    .insert([{
+                        ac_name: currentUser.ac_name,
+                        usser_name: currentUser.usser_name,
+                        password: currentUser.password,
+                        topic: title,
+                        content: content,
+                        commnet: JSON.stringify([]),
+                        like: 0,
+                        d_like: 0
+                    }])
+                    .select();
+
+                if (error) throw error;
+
+                document.getElementById('newPostTitle').value = '';
+                document.getElementById('newPostContent').value = '';
+                
+                alert('✅ Post එක සාර්ථකව publish විය!');
+                loadPosts();
+                loadWriters();
+            } catch (error) {
+                console.error('Error adding post:', error);
+                alert('❌ Post එක add කිරීමේදී දෝෂයක් සිදු විය: ' + error.message);
+            }
+        }
+
+        // Edit Post
+        async function editPost(postId) {
+            try {
+                const { data: post, error: fetchError } = await supabaseClient
+                    .from('agora')
+                    .select('*')
+                    .eq('id', postId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                if (post.usser_name !== currentUser.usser_name) {
+                    alert('ඔබට මෙම post එක edit කිරීමට අවසර නැත!');
+                    return;
+                }
+
+                const newTitle = prompt('නව මාතෘකාව:', post.topic);
+                const newContent = prompt('නව අන්තර්ගතය:', post.content);
+
+                if (newTitle && newContent) {
+                    const { error: updateError } = await supabaseClient
+                        .from('agora')
+                        .update({ 
+                            topic: newTitle,
+                            content: newContent
+                        })
+                        .eq('id', postId);
+
+                    if (updateError) throw updateError;
+
+                    alert('✅ Post එක සාර්ථකව update විය!');
+                    loadPosts();
+                }
+            } catch (error) {
+                console.error('Error editing post:', error);
+                alert('Post එක edit කිරීමේදී දෝෂයක් සිදු විය');
+            }
+        }
+
+        // Delete Post
+        async function deletePost(postId) {
+            if (!confirm('ඔබට මෙම post එක delete කිරීමට අවශ්‍යද?')) {
+                return;
+            }
+
+            try {
+                const { data: post, error: fetchError } = await supabaseClient
+                    .from('agora')
+                    .select('usser_name')
+                    .eq('id', postId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                if (post.usser_name !== currentUser.usser_name) {
+                    alert('ඔබට මෙම post එක delete කිරීමට අවසර නැත!');
+                    return;
+                }
+
+                const { error: deleteError } = await supabaseClient
+                    .from('agora')
+                    .delete()
+                    .eq('id', postId);
+
+                if (deleteError) throw deleteError;
+
+                alert('✅ Post එක සාර්ථකව delete විය!');
+                loadPosts();
+                loadWriters();
+            } catch (error) {
+                console.error('Error deleting post:', error);
+                alert('Post එක delete කිරීමේදී දෝෂයක් සිදු විය');
+            }
+        }
+
+        // Handle Like
+        async function handleLike(postId) {
+            const userLikeStatus = hasUserLiked(postId);
+
+            if (userLikeStatus === 'like') {
+                alert('ඔබ දැනටමත් මෙම post එකට like කර ඇත!');
+                return;
+            }
+
+            try {
+                const { data: post, error: fetchError } = await supabaseClient
+                    .from('agora')
+                    .select('like, d_like')
+                    .eq('id', postId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                let newLikeCount = parseInt(post.like || 0) + 1;
+                let newDislikeCount = parseInt(post.d_like || 0);
+
+                // If user had disliked before, remove that dislike
+                if (userLikeStatus === 'dislike') {
+                    newDislikeCount = Math.max(0, newDislikeCount - 1);
+                }
+
+                const { error: updateError } = await supabaseClient
+                    .from('agora')
+                    .update({ 
+                        like: newLikeCount,
+                        d_like: newDislikeCount
+                    })
+                    .eq('id', postId);
+
+                if (updateError) throw updateError;
+
+                saveUserLike(postId, 'like');
+                document.getElementById(`like-count-${postId}`).textContent = newLikeCount;
+                document.getElementById(`dislike-count-${postId}`).textContent = newDislikeCount;
+                
+                loadPosts(); // Refresh to show active state
+            } catch (error) {
+                console.error('Error updating like:', error);
+            }
+        }
+
+        // Handle Dislike
+        async function handleDislike(postId) {
+            const userLikeStatus = hasUserLiked(postId);
+
+            if (userLikeStatus === 'dislike') {
+                alert('ඔබ දැනටමත් මෙම post එකට dislike කර ඇත!');
+                return;
+            }
+
+            try {
+                const { data: post, error: fetchError } = await supabaseClient
+                    .from('agora')
+                    .select('like, d_like')
+                    .eq('id', postId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                let newLikeCount = parseInt(post.like || 0);
+                let newDislikeCount = parseInt(post.d_like || 0) + 1;
+
+                // If user had liked before, remove that like
+                if (userLikeStatus === 'like') {
+                    newLikeCount = Math.max(0, newLikeCount - 1);
+                }
+
+                const { error: updateError } = await supabaseClient
+                    .from('agora')
+                    .update({ 
+                        like: newLikeCount,
+                        d_like: newDislikeCount
+                    })
+                    .eq('id', postId);
+
+                if (updateError) throw updateError;
+
+                saveUserLike(postId, 'dislike');
+                document.getElementById(`like-count-${postId}`).textContent = newLikeCount;
+                document.getElementById(`dislike-count-${postId}`).textContent = newDislikeCount;
+                
+                loadPosts(); // Refresh to show active state
+            } catch (error) {
+                console.error('Error updating dislike:', error);
+            }
+        }
+
+        // Add Comment
+        async function addComment(postId) {
+            const commentInput = document.getElementById(`comment-input-${postId}`);
+            const commentText = commentInput.value.trim();
+
+            if (!commentText) {
+                alert('කරුණාකර comment එකක් ඇතුළත් කරන්න');
+                return;
+            }
+
+            try {
+                const { data: post, error: fetchError } = await supabaseClient
+                    .from('agora')
+                    .select('commnet')
+                    .eq('id', postId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                let comments = [];
+                try {
+                    comments = post.commnet ? JSON.parse(post.commnet) : [];
+                } catch (e) {
+                    comments = [];
+                }
+
+                comments.push({
+                    author: currentUser.ac_name,
+                    text: commentText
+                });
+
+                const { error: updateError } = await supabaseClient
+                    .from('agora')
+                    .update({ commnet: JSON.stringify(comments) })
+                    .eq('id', postId);
+
+                if (updateError) throw updateError;
+
+                commentInput.value = '';
+                loadPosts();
+            } catch (error) {
+                console.error('Error adding comment:', error);
+                alert('Comment එක add කිරීමේදී දෝෂයක් සිදු විය');
+            }
+        }
+
+        // Delete Comment
+        async function deleteComment(postId, commentIdx) {
+            if (!confirm('ඔබට මෙම comment එක delete කිරීමට අවශ්‍යද?')) {
+                return;
+            }
+
+            try {
+                const { data: post, error: fetchError } = await supabaseClient
+                    .from('agora')
+                    .select('commnet')
+                    .eq('id', postId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                let comments = JSON.parse(post.commnet || '[]');
+                
+                if (comments[commentIdx].author !== currentUser.ac_name) {
+                    alert('ඔබට මෙම comment එක delete කිරීමට අවසර නැත!');
+                    return;
+                }
+
+                comments.splice(commentIdx, 1);
+
+                const { error: updateError } = await supabaseClient
+                    .from('agora')
+                    .update({ commnet: JSON.stringify(comments) })
+                    .eq('id', postId);
+
+                if (updateError) throw updateError;
+
+                alert('✅ Comment එක සාර්ථකව delete විය!');
+                loadPosts();
+            } catch (error) {
+                console.error('Error deleting comment:', error);
+                alert('Comment එක delete කිරීමේදී දෝෂයක් සිදු විය');
+            }
+        }
+
+        // Download Post as PDF with proper Sinhala support
+        async function downloadPostAsPDF(postId) {
+            try {
+                const { data: post, error } = await supabaseClient
+                    .from('agora')
+                    .select('*')
+                    .eq('id', postId)
+                    .single();
+
+                if (error) throw error;
+
+                // Create HTML for PDF rendering
+                const pdfArea = document.getElementById('pdfRenderArea');
+                pdfArea.innerHTML = `
+                    <div class="pdf-title">Agora - Educational Discussion</div>
+                    <div class="pdf-topic">${escapeHtml(post.topic || 'No Title')}</div>
+                    <div class="pdf-meta">Author: ${escapeHtml(post.ac_name || 'Unknown')}</div>
+                    <div class="pdf-meta">Date: ${new Date(post.created_at).toLocaleDateString()}</div>
+                    <div class="pdf-content">${escapeHtml(post.content || '')}</div>
+                `;
+
+                // Use html2canvas to render Sinhala text properly
+                const canvas = await html2canvas(pdfArea, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 210; // A4 width in mm
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save(`agora-post-${postId}.pdf`);
+
+                // Clear the render area
+                pdfArea.innerHTML = '';
+            } catch (error) {
+                console.error('Error downloading PDF:', error);
+                alert('PDF download කිරීමේදී දෝෂයක් සිදු විය');
+            }
+        }
+
+        // Utility Functions
+        function getTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'අද';
+            if (diffDays === 1) return 'ඊයේ';
+            if (diffDays < 7) return `දින ${diffDays}කට පෙර`;
+            if (diffDays < 28) return `සති ${Math.floor(diffDays / 7)}කට පෙර`;
+            return date.toLocaleDateString('si-LK');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Allow Enter key to submit login
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleLogin();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -290,10 +290,40 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
+        /* Collapsible Post Section */
+        .new-post-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .toggle-icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+            color: #7fb069;
+            font-weight: 700;
+        }
+
+        .toggle-icon.rotated {
+            transform: rotate(45deg);
+        }
+
+        .new-post-form {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .new-post-form.expanded {
+            max-height: 500px;
+            margin-top: 1rem;
+        }
+
         .section-title {
             font-size: 1.5rem;
             color: #050505;
-            margin-bottom: 1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -500,10 +530,136 @@
             color: #f02849;
         }
 
+        .comment-btn.like {
+            color: #7fb069;
+        }
+
+        .comment-btn.like.active {
+            background: #e7f3ec;
+            font-weight: 700;
+        }
+
         .comment-text {
             color: #050505;
             line-height: 1.5;
             font-size: 0.95rem;
+        }
+
+        .comment-footer {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+            align-items: center;
+        }
+
+        .comment-like-btn {
+            padding: 0.2rem 0.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            color: #65676b;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .comment-like-btn:hover {
+            background: #dddfe2;
+        }
+
+        .comment-like-btn.active {
+            color: #7fb069;
+            background: #e7f3ec;
+        }
+
+        .comment-reply-btn {
+            padding: 0.2rem 0.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            color: #65676b;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .comment-reply-btn:hover {
+            background: #dddfe2;
+        }
+
+        .reply-section {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+            padding-left: 1rem;
+            border-left: 2px solid #e4e6eb;
+        }
+
+        .reply-item {
+            background: #ffffff;
+            padding: 0.6rem 0.8rem;
+            margin-bottom: 0.4rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .reply-author {
+            font-weight: 600;
+            color: #7fb069;
+            font-size: 0.85rem;
+        }
+
+        .reply-text {
+            color: #050505;
+            margin-top: 0.3rem;
+            line-height: 1.4;
+        }
+
+        .reply-input-area {
+            display: none;
+            margin-top: 0.5rem;
+            margin-left: 2rem;
+        }
+
+        .reply-input-area.active {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .reply-input {
+            flex: 1;
+            padding: 0.5rem 0.7rem;
+            background: #ffffff;
+            border: 1px solid #dddfe2;
+            border-radius: 15px;
+            color: #050505;
+            font-family: 'Noto Sans Sinhala', serif;
+            font-size: 0.85rem;
+        }
+
+        .reply-input:focus {
+            outline: none;
+            border-color: #7fb069;
+        }
+
+        .btn-reply-submit {
+            padding: 0.5rem 0.8rem;
+            background: #7fb069;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+
+        .btn-reply-submit:hover {
+            background: #6fa057;
         }
 
         .add-comment {
@@ -552,47 +708,107 @@
             font-size: 1.1rem;
         }
 
-        /* Hidden PDF render area - improved for multi-page support */
+        /* Mobile Writer Filter */
+        .mobile-writer-filter {
+            display: none;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e4e6eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-filter-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            padding: 0.5rem;
+        }
+
+        .mobile-filter-title {
+            font-size: 1.1rem;
+            color: #65676b;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mobile-filter-icon {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+            color: #7fb069;
+        }
+
+        .mobile-filter-icon.rotated {
+            transform: rotate(180deg);
+        }
+
+        .mobile-writers-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 0;
+        }
+
+        .mobile-writers-list.expanded {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 0.5rem;
+        }
+
+        /* Hidden PDF render area - improved for multi-page support with smaller font */
         .pdf-render {
             position: fixed;
             left: -9999px;
             top: 0;
             background: white;
-            padding: 40px;
-            width: 750px;
+            padding: 25px 30px;
+            width: 210mm;
+            box-sizing: border-box;
         }
 
         .pdf-render .pdf-title {
-            font-size: 28px;
+            font-size: 17px;
             font-weight: bold;
             color: #000;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 14px;
             font-family: 'Noto Sans Sinhala', sans-serif;
+            line-height: 1.4;
+            padding-bottom: 5px;
         }
 
         .pdf-render .pdf-topic {
-            font-size: 22px;
+            font-size: 13px;
             font-weight: bold;
             color: #333;
-            margin-bottom: 20px;
+            margin-bottom: 11px;
             font-family: 'Noto Sans Sinhala', sans-serif;
+            line-height: 1.5;
+            padding-bottom: 3px;
         }
 
         .pdf-render .pdf-meta {
-            font-size: 14px;
+            font-size: 9.5px;
             color: #666;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             font-family: 'Noto Sans Sinhala', sans-serif;
+            line-height: 1.4;
         }
 
         .pdf-render .pdf-content {
-            font-size: 16px;
+            font-size: 10.5px;
             color: #000;
             line-height: 1.8;
-            margin-top: 20px;
+            margin-top: 13px;
             white-space: pre-wrap;
+            word-wrap: break-word;
             font-family: 'Noto Sans Sinhala', sans-serif;
+            padding-bottom: 15px;
         }
 
         @media (max-width: 768px) {
@@ -643,6 +859,10 @@
 
             .sidebar {
                 display: none;
+            }
+
+            .mobile-writer-filter {
+                display: block;
             }
 
             .new-post-section,
@@ -698,6 +918,10 @@
 
             .btn-comment {
                 width: 100%;
+            }
+
+            .reply-section {
+                margin-left: 1rem;
             }
         }
 
@@ -776,24 +1000,41 @@
             </div>
 
             <div class="content-area">
-                <div class="new-post-section">
-                    <div class="section-title">
-                        ➕ Add new post
+                <!-- Mobile Writer Filter -->
+                <div class="mobile-writer-filter">
+                    <div class="mobile-filter-header" onclick="toggleMobileWriters()">
+                        <div class="mobile-filter-title">
+                            👥 Filter by Writer
+                        </div>
+                        <span class="mobile-filter-icon" id="mobileFilterIcon">▼</span>
                     </div>
-                    <input
-                        type="text"
-                        class="input-field"
-                        id="newPostTitle"
-                        placeholder="Topic"
-                    />
-                    <textarea
-                        class="input-field"
-                        id="newPostContent"
-                        placeholder="add text...."
-                    ></textarea>
-                    <button class="btn-primary" onclick="addNewPost()">
-                        ➕ Publish Post
-                    </button>
+                    <div class="mobile-writers-list" id="mobileWritersList"></div>
+                </div>
+
+                <!-- Collapsible New Post Section -->
+                <div class="new-post-section">
+                    <div class="new-post-header" onclick="toggleNewPost()">
+                        <div class="section-title">
+                            Add new post
+                        </div>
+                        <span class="toggle-icon" id="toggleIcon">+</span>
+                    </div>
+                    <div class="new-post-form" id="newPostForm">
+                        <input
+                            type="text"
+                            class="input-field"
+                            id="newPostTitle"
+                            placeholder="Topic"
+                        />
+                        <textarea
+                            class="input-field"
+                            id="newPostContent"
+                            placeholder="add text...."
+                        ></textarea>
+                        <button class="btn-primary" onclick="addNewPost()">
+                            ➕ Publish Post
+                        </button>
+                    </div>
                 </div>
 
                 <div id="postsContainer">
@@ -818,8 +1059,36 @@
         };
 
         let autoSyncInterval = null;
-        let selectedWriter = null; // Track selected writer for filtering
-        let allPosts = []; // Store all posts for filtering
+        let selectedWriter = null;
+        let allPosts = [];
+
+        // Toggle New Post Form
+        function toggleNewPost() {
+            const form = document.getElementById('newPostForm');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (form.classList.contains('expanded')) {
+                form.classList.remove('expanded');
+                icon.classList.remove('rotated');
+            } else {
+                form.classList.add('expanded');
+                icon.classList.add('rotated');
+            }
+        }
+
+        // Toggle Mobile Writers List
+        function toggleMobileWriters() {
+            const list = document.getElementById('mobileWritersList');
+            const icon = document.getElementById('mobileFilterIcon');
+            
+            if (list.classList.contains('expanded')) {
+                list.classList.remove('expanded');
+                icon.classList.remove('rotated');
+            } else {
+                list.classList.add('expanded');
+                icon.classList.add('rotated');
+            }
+        }
 
         // Session Storage Functions
         function saveSession() {
@@ -836,7 +1105,6 @@
             if (session) {
                 try {
                     const data = JSON.parse(session);
-                    // Check if session is still valid (optional: add expiry logic)
                     if (data.usser_name && data.password) {
                         currentUser = {
                             ac_name: data.ac_name,
@@ -856,19 +1124,16 @@
             sessionStorage.removeItem('agora_session');
         }
 
-        // Auto-sync every 30 minutes
         function startAutoSync() {
-            // Clear any existing interval
             if (autoSyncInterval) {
                 clearInterval(autoSyncInterval);
             }
             
-            // Set new interval for 30 minutes (1800000 milliseconds)
             autoSyncInterval = setInterval(() => {
                 console.log('Auto-syncing posts and writers...');
                 loadPosts();
                 loadWriters();
-            }, 1800000); // 30 minutes
+            }, 1800000);
         }
 
         function stopAutoSync() {
@@ -896,6 +1161,28 @@
         function hasUserLiked(postId) {
             const likes = getUserLikes();
             return likes[currentUser.usser_name]?.[postId];
+        }
+
+        // Comment likes tracking
+        function getCommentLikes() {
+            const likes = localStorage.getItem('agora_comment_likes');
+            return likes ? JSON.parse(likes) : {};
+        }
+
+        function saveCommentLike(postId, commentIdx) {
+            const likes = getCommentLikes();
+            const key = `${postId}-${commentIdx}`;
+            if (!likes[currentUser.usser_name]) {
+                likes[currentUser.usser_name] = {};
+            }
+            likes[currentUser.usser_name][key] = true;
+            localStorage.setItem('agora_comment_likes', JSON.stringify(likes));
+        }
+
+        function hasUserLikedComment(postId, commentIdx) {
+            const likes = getCommentLikes();
+            const key = `${postId}-${commentIdx}`;
+            return likes[currentUser.usser_name]?.[key] || false;
         }
 
         // Login Handler
@@ -984,7 +1271,6 @@
         }
 
         function completeLogin() {
-            // Save session
             saveSession();
             
             document.getElementById('loginModal').classList.remove('active');
@@ -994,17 +1280,14 @@
             loadWriters();
             deleteOldPosts();
             
-            // Start auto-sync
             startAutoSync();
             console.log('Auto-sync started - will refresh every 30 minutes');
         }
 
         function handleLogout() {
-            // Stop auto-sync
             stopAutoSync();
             console.log('Auto-sync stopped');
             
-            // Clear session
             clearSession();
             
             currentUser = { ac_name: '', usser_name: '', password: '' };
@@ -1018,7 +1301,6 @@
             document.getElementById('loginError').textContent = '';
         }
 
-        // Delete posts older than 28 days
         async function deleteOldPosts() {
             try {
                 const twentyEightDaysAgo = new Date();
@@ -1036,7 +1318,6 @@
             }
         }
 
-        // Load Writers with click handlers
         async function loadWriters() {
             try {
                 const { data, error } = await supabaseClient
@@ -1049,14 +1330,20 @@
 
                 const uniqueWriters = [...new Set(data.map(item => item.ac_name).filter(name => name))];
                 const writersList = document.getElementById('writersList');
+                const mobileWritersList = document.getElementById('mobileWritersList');
+                
                 writersList.innerHTML = '';
+                mobileWritersList.innerHTML = '';
 
                 if (uniqueWriters.length === 0) {
-                    writersList.innerHTML = '<div style="color: #a8d08d; padding: 1rem;">තවම writers නැහැ</div>';
+                    const emptyMsg = '<div style="color: #a8d08d; padding: 1rem;">තවම writers නැහැ</div>';
+                    writersList.innerHTML = emptyMsg;
+                    mobileWritersList.innerHTML = emptyMsg;
                     return;
                 }
 
                 uniqueWriters.forEach(writer => {
+                    // Desktop sidebar
                     const writerItem = document.createElement('div');
                     const isCurrentUser = writer === currentUser.ac_name;
                     const isSelected = selectedWriter === writer;
@@ -1070,32 +1357,34 @@
                         <span>${writer}</span>
                     `;
                     
-                    // Add click handler to filter posts by writer
                     writerItem.onclick = () => filterByWriter(writer);
-                    
                     writersList.appendChild(writerItem);
+
+                    // Mobile list
+                    const mobileWriterItem = writerItem.cloneNode(true);
+                    mobileWriterItem.onclick = () => {
+                        filterByWriter(writer);
+                        toggleMobileWriters(); // Close after selection
+                    };
+                    mobileWritersList.appendChild(mobileWriterItem);
                 });
             } catch (error) {
                 console.error('Error loading writers:', error);
             }
         }
 
-        // Filter posts by writer
         function filterByWriter(writer) {
             if (selectedWriter === writer) {
-                // Unselect if clicking the same writer
                 selectedWriter = null;
                 displayPosts(allPosts);
             } else {
-                // Select new writer and filter
                 selectedWriter = writer;
                 const filtered = allPosts.filter(post => post.ac_name === writer);
                 displayPosts(filtered);
             }
-            loadWriters(); // Refresh writers list to update highlighting
+            loadWriters();
         }
 
-        // Load Posts
         async function loadPosts() {
             try {
                 const { data, error } = await supabaseClient
@@ -1106,14 +1395,12 @@
 
                 if (error) throw error;
 
-                allPosts = data; // Store all posts
+                allPosts = data;
 
                 if (selectedWriter) {
-                    // If a writer is selected, filter posts
                     const filtered = data.filter(post => post.ac_name === selectedWriter);
                     displayPosts(filtered);
                 } else {
-                    // Otherwise show all posts
                     displayPosts(data);
                 }
             } catch (error) {
@@ -1122,7 +1409,6 @@
             }
         }
 
-        // Display posts in the container
         function displayPosts(posts) {
             const postsContainer = document.getElementById('postsContainer');
             postsContainer.innerHTML = '';
@@ -1215,11 +1501,25 @@
                 
                 return comments.map((comment, idx) => {
                     const isOwner = comment.author === currentUser.ac_name;
+                    const hasLiked = hasUserLikedComment(postId, idx);
+                    const likeCount = comment.likes || 0;
+                    
                     const actions = isOwner ? `
                         <div class="comment-actions">
                             <button class="comment-btn delete" onclick="deleteComment(${postId}, ${idx})">
                                 🗑️ Delete
                             </button>
+                        </div>
+                    ` : '';
+
+                    const replies = comment.replies && comment.replies.length > 0 ? `
+                        <div class="reply-section">
+                            ${comment.replies.map(reply => `
+                                <div class="reply-item">
+                                    <div class="reply-author">${escapeHtml(reply.author)}</div>
+                                    <div class="reply-text">${escapeHtml(reply.text)}</div>
+                                </div>
+                            `).join('')}
                         </div>
                     ` : '';
 
@@ -1230,12 +1530,123 @@
                                 ${actions}
                             </div>
                             <div class="comment-text">${escapeHtml(comment.text || '')}</div>
+                            <div class="comment-footer">
+                                <button class="comment-like-btn ${hasLiked ? 'active' : ''}" onclick="likeComment(${postId}, ${idx})">
+                                    👍 ${likeCount > 0 ? likeCount : ''}
+                                </button>
+                                <button class="comment-reply-btn" onclick="toggleReplyInput(${postId}, ${idx})">
+                                    💬 Reply
+                                </button>
+                            </div>
+                            ${replies}
+                            <div class="reply-input-area" id="reply-input-${postId}-${idx}">
+                                <input
+                                    type="text"
+                                    class="reply-input"
+                                    id="reply-text-${postId}-${idx}"
+                                    placeholder="Add reply..."
+                                />
+                                <button class="btn-reply-submit" onclick="addReply(${postId}, ${idx})">
+                                    Reply
+                                </button>
+                            </div>
                         </div>
                     `;
                 }).join('');
             } catch (e) {
                 console.error('Error parsing comments:', e);
                 return '';
+            }
+        }
+
+        function toggleReplyInput(postId, commentIdx) {
+            const replyArea = document.getElementById(`reply-input-${postId}-${commentIdx}`);
+            if (replyArea.classList.contains('active')) {
+                replyArea.classList.remove('active');
+            } else {
+                replyArea.classList.add('active');
+                document.getElementById(`reply-text-${postId}-${commentIdx}`).focus();
+            }
+        }
+
+        async function addReply(postId, commentIdx) {
+            const replyInput = document.getElementById(`reply-text-${postId}-${commentIdx}`);
+            const replyText = replyInput.value.trim();
+
+            if (!replyText) {
+                alert('කරුණාකර reply එකක් ඇතුළත් කරන්න');
+                return;
+            }
+
+            try {
+                const { data: post, error: fetchError } = await supabaseClient
+                    .from('agora')
+                    .select('commnet')
+                    .eq('id', postId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                let comments = JSON.parse(post.commnet || '[]');
+                
+                if (!comments[commentIdx].replies) {
+                    comments[commentIdx].replies = [];
+                }
+
+                comments[commentIdx].replies.push({
+                    author: currentUser.ac_name,
+                    text: replyText
+                });
+
+                const { error: updateError } = await supabaseClient
+                    .from('agora')
+                    .update({ commnet: JSON.stringify(comments) })
+                    .eq('id', postId);
+
+                if (updateError) throw updateError;
+
+                replyInput.value = '';
+                loadPosts();
+            } catch (error) {
+                console.error('Error adding reply:', error);
+                alert('Reply එක add කිරීමේදී දෝෂයක් සිදු විය');
+            }
+        }
+
+        async function likeComment(postId, commentIdx) {
+            if (hasUserLikedComment(postId, commentIdx)) {
+                alert('ඔබ දැනටමත් මෙම comment එකට like කර ඇත!');
+                return;
+            }
+
+            try {
+                const { data: post, error: fetchError } = await supabaseClient
+                    .from('agora')
+                    .select('commnet')
+                    .eq('id', postId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                let comments = JSON.parse(post.commnet || '[]');
+                
+                if (!comments[commentIdx].likes) {
+                    comments[commentIdx].likes = 0;
+                }
+                comments[commentIdx].likes++;
+
+                const { error: updateError } = await supabaseClient
+                    .from('agora')
+                    .update({ commnet: JSON.stringify(comments) })
+                    .eq('id', postId);
+
+                if (updateError) throw updateError;
+
+                saveCommentLike(postId, commentIdx);
+                loadPosts();
+            } catch (error) {
+                console.error('Error liking comment:', error);
+                alert('Comment like කිරීමේදී දෝෂයක් සිදු විය');
             }
         }
 
@@ -1247,7 +1658,6 @@
             }, 500);
         }
 
-        // Add New Post
         async function addNewPost() {
             const title = document.getElementById('newPostTitle').value.trim();
             const content = document.getElementById('newPostContent').value.trim();
@@ -1277,6 +1687,9 @@
                 document.getElementById('newPostTitle').value = '';
                 document.getElementById('newPostContent').value = '';
                 
+                // Collapse the form after posting
+                toggleNewPost();
+                
                 alert('✅ Post එක සාර්ථකව publish විය!');
                 loadPosts();
                 loadWriters();
@@ -1286,7 +1699,6 @@
             }
         }
 
-        // Edit Post
         async function editPost(postId) {
             try {
                 const { data: post, error: fetchError } = await supabaseClient
@@ -1325,7 +1737,6 @@
             }
         }
 
-        // Delete Post
         async function deletePost(postId) {
             if (!confirm('ඔබට මෙම post එක delete කිරීමට අවශ්‍යද?')) {
                 return;
@@ -1361,7 +1772,6 @@
             }
         }
 
-        // Handle Like
         async function handleLike(postId) {
             const userLikeStatus = hasUserLiked(postId);
 
@@ -1382,7 +1792,6 @@
                 let newLikeCount = parseInt(post.like || 0) + 1;
                 let newDislikeCount = parseInt(post.d_like || 0);
 
-                // If user had disliked before, remove that dislike
                 if (userLikeStatus === 'dislike') {
                     newDislikeCount = Math.max(0, newDislikeCount - 1);
                 }
@@ -1407,7 +1816,6 @@
             }
         }
 
-        // Handle Dislike
         async function handleDislike(postId) {
             const userLikeStatus = hasUserLiked(postId);
 
@@ -1428,7 +1836,6 @@
                 let newLikeCount = parseInt(post.like || 0);
                 let newDislikeCount = parseInt(post.d_like || 0) + 1;
 
-                // If user had liked before, remove that like
                 if (userLikeStatus === 'like') {
                     newLikeCount = Math.max(0, newLikeCount - 1);
                 }
@@ -1453,7 +1860,6 @@
             }
         }
 
-        // Add Comment
         async function addComment(postId) {
             const commentInput = document.getElementById(`comment-input-${postId}`);
             const commentText = commentInput.value.trim();
@@ -1481,7 +1887,9 @@
 
                 comments.push({
                     author: currentUser.ac_name,
-                    text: commentText
+                    text: commentText,
+                    likes: 0,
+                    replies: []
                 });
 
                 const { error: updateError } = await supabaseClient
@@ -1499,7 +1907,6 @@
             }
         }
 
-        // Delete Comment
         async function deleteComment(postId, commentIdx) {
             if (!confirm('ඔබට මෙම comment එක delete කිරීමට අවශ්‍යද?')) {
                 return;
@@ -1538,7 +1945,6 @@
             }
         }
 
-        // Download Post as PDF with proper Sinhala support and multi-page handling
         async function downloadPostAsPDF(event, postId) {
             try {
                 const { data: post, error } = await supabaseClient
@@ -1549,13 +1955,11 @@
 
                 if (error) throw error;
 
-                // Show loading indicator
                 const btn = event.target;
                 const originalText = btn.textContent;
                 btn.textContent = '⏳ Creating PDF...';
                 btn.disabled = true;
 
-                // Create HTML for PDF rendering
                 const pdfArea = document.getElementById('pdfRenderArea');
                 pdfArea.innerHTML = `
                     <div class="pdf-title">Agora - Educational Discussion</div>
@@ -1565,51 +1969,88 @@
                     <div class="pdf-content">${escapeHtml(post.content || '')}</div>
                 `;
 
-                // Use html2canvas to render Sinhala text properly
+                // Wait for fonts to load
+                await new Promise(resolve => setTimeout(resolve, 150));
+
                 const canvas = await html2canvas(pdfArea, {
-                    scale: 2,
+                    scale: 3,
                     useCORS: true,
                     logging: false,
-                    windowWidth: 750
+                    windowWidth: 794,
+                    backgroundColor: '#ffffff',
+                    removeContainer: false
                 });
 
-                const imgData = canvas.toDataURL('image/png');
+                const imgData = canvas.toDataURL('image/png', 1.0);
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 
-                const pageWidth = 210; // A4 width in mm
-                const pageHeight = 297; // A4 height in mm
-                const imgWidth = pageWidth;
-                const imgHeight = (canvas.height * pageWidth) / canvas.width;
+                const pageWidth = 210;
+                const pageHeight = 297;
+                const margin = 15;
                 
-                let heightLeft = imgHeight;
-                let position = 0;
+                // Calculate dimensions with overlap to prevent text cutting
+                const imgWidthMM = pageWidth - (2 * margin);
+                const imgHeightMM = (canvas.height * imgWidthMM) / canvas.width;
+                const pageContentHeight = pageHeight - (2 * margin);
                 
-                // Add first page
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pageHeight;
+                // Add small overlap between pages (5mm) to ensure no text is cut
+                const overlapMM = 5;
                 
-                // Add additional pages if content is longer than one page
-                while (heightLeft > 0) {
-                    position = heightLeft - imgHeight;
-                    pdf.addPage();
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
+                // Calculate how many pages we need
+                const totalPages = Math.ceil(imgHeightMM / (pageContentHeight - overlapMM)) || 1;
+                
+                for (let page = 0; page < totalPages; page++) {
+                    if (page > 0) {
+                        pdf.addPage();
+                    }
+                    
+                    // Calculate the portion of the image to show on this page
+                    // Each page starts slightly before the previous one ended (overlap)
+                    const sourceY = page === 0 ? 0 : (page * (pageContentHeight - overlapMM) - overlapMM);
+                    const sourceHeight = Math.min(pageContentHeight, imgHeightMM - sourceY);
+                    
+                    if (sourceHeight <= 0) break; // No more content
+                    
+                    // Convert to pixel coordinates
+                    const pixelsPerMM = canvas.height / imgHeightMM;
+                    const sourceYPixels = sourceY * pixelsPerMM;
+                    const sourceHeightPixels = sourceHeight * pixelsPerMM;
+                    
+                    // Create a temporary canvas for this page slice
+                    const pageCanvas = document.createElement('canvas');
+                    pageCanvas.width = canvas.width;
+                    pageCanvas.height = Math.min(sourceHeightPixels, canvas.height - sourceYPixels);
+                    
+                    const pageCtx = pageCanvas.getContext('2d');
+                    pageCtx.fillStyle = '#ffffff';
+                    pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                    
+                    pageCtx.drawImage(
+                        canvas,
+                        0, sourceYPixels, canvas.width, pageCanvas.height,
+                        0, 0, canvas.width, pageCanvas.height
+                    );
+                    
+                    const pageImgData = pageCanvas.toDataURL('image/png', 1.0);
+                    
+                    // Calculate the actual height for this page
+                    const actualHeightMM = (pageCanvas.height * imgWidthMM) / canvas.width;
+                    
+                    pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidthMM, actualHeightMM);
                 }
                 
                 pdf.save(`agora-post-${postId}.pdf`);
 
-                // Clear the render area
                 pdfArea.innerHTML = '';
                 
-                // Reset button
                 btn.textContent = originalText;
                 btn.disabled = false;
                 
                 alert('✅ PDF සාර්ථකව download විය!');
             } catch (error) {
                 console.error('Error downloading PDF:', error);
-                alert('PDF download කිරීමේදී දෝෂයක් සිදු විය');
+                alert('PDF download කිරීමේදී දෝෂයක් සිදු විය: ' + error.message);
                 if (event && event.target) {
                     event.target.textContent = '📥 Download';
                     event.target.disabled = false;
@@ -1617,7 +2058,6 @@
             }
         }
 
-        // Utility Functions
         function getTimeAgo(dateString) {
             const date = new Date(dateString);
             const now = new Date();
@@ -1638,15 +2078,12 @@
             return div.innerHTML;
         }
 
-        // On page load, check for existing session
         document.addEventListener('DOMContentLoaded', function() {
-            // Check for existing session
             if (loadSession()) {
                 console.log('Session found, auto-logging in...');
                 completeLogin();
             }
             
-            // Allow Enter key to submit login
             document.getElementById('loginPassword').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     handleLogin();

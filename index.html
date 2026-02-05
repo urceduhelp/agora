@@ -382,16 +382,121 @@
 
         .post-card {
             background: #ffffff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
             border: 1px solid #e4e6eb;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            overflow: hidden;
         }
 
         .post-card:hover {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .post-card.expanded {
+            cursor: default;
+        }
+
+        .post-card.expanded:hover {
+            transform: translateY(0);
+        }
+
+        .post-card-preview {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .post-preview-left {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .post-preview-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #7fb069 0%, #a8d08d 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(127, 176, 105, 0.3);
+        }
+
+        .post-preview-title {
+            font-size: 1.2rem;
+            color: #050505;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .post-preview-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: #65676b;
+            flex-wrap: wrap;
+        }
+
+        .post-preview-author {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .post-preview-stats {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.85rem;
+            color: #65676b;
+        }
+
+        .post-preview-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .post-expand-icon {
+            font-size: 1.5rem;
+            color: #7fb069;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .post-card.expanded .post-expand-icon {
+            transform: rotate(180deg);
+        }
+
+        .post-full-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .post-card.expanded .post-full-content {
+            max-height: 10000px;
+        }
+
+        .post-divider {
+            height: 1px;
+            background: #e4e6eb;
+            margin: 1rem 0;
         }
 
         .post-header {
@@ -869,15 +974,29 @@
             .post-card {
                 padding: 1rem;
                 margin-bottom: 1rem;
-                border-radius: 6px;
+                border-radius: 8px;
             }
 
             .section-title {
                 font-size: 1.2rem;
             }
 
-            .post-title {
-                font-size: 1.2rem;
+            .post-preview-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+
+            .post-preview-title {
+                font-size: 1.05rem;
+            }
+
+            .post-preview-meta {
+                font-size: 0.8rem;
+            }
+
+            .post-preview-stats {
+                font-size: 0.8rem;
             }
 
             .post-content {
@@ -1438,58 +1557,98 @@
             const userLikeStatus = hasUserLiked(post.id);
 
             const ownerActions = isOwner ? `
-                <button class="action-btn edit" onclick="editPost(${post.id})">
+                <button class="action-btn edit" onclick="event.stopPropagation(); editPost(${post.id})">
                     ✏️ Edit
                 </button>
-                <button class="action-btn delete" onclick="deletePost(${post.id})">
+                <button class="action-btn delete" onclick="event.stopPropagation(); deletePost(${post.id})">
                     🗑️ Delete
                 </button>
             ` : '';
 
+            // Get comment count
+            let commentCount = 0;
+            try {
+                const comments = JSON.parse(post.commnet || '[]');
+                commentCount = comments.length;
+            } catch (e) {
+                commentCount = 0;
+            }
+
+            // Random icons for variety
+            const icons = ['📚', '💡', '🎓', '📝', '🌟', '💭', '🔍', '✨'];
+            const randomIcon = icons[post.id % icons.length];
+
             postCard.innerHTML = `
-                <div class="post-header">
-                    <div class="post-author">
-                        👤 ${escapeHtml(post.ac_name || 'Unknown')}
+                <div class="post-card-preview" onclick="togglePost(${post.id})">
+                    <div class="post-preview-left">
+                        <div class="post-preview-title">${escapeHtml(post.topic)}</div>
+                        <div class="post-preview-meta">
+                            <span class="post-preview-author">👤 ${escapeHtml(post.ac_name || 'Unknown')}</span>
+                            <span>•</span>
+                            <span>${timeAgo}</span>
+                        </div>
+                        <div class="post-preview-stats">
+                            <span class="post-preview-stat">
+                                <span>👍</span>
+                                <span>${post.like || 0}</span>
+                            </span>
+                            <span class="post-preview-stat">
+                                <span>💬</span>
+                                <span>${commentCount}</span>
+                            </span>
+                        </div>
                     </div>
-                    <div class="post-date">${timeAgo}</div>
-                </div>
-                
-                <div class="post-title" id="title-${post.id}">${escapeHtml(post.topic)}</div>
-                <div class="post-content" id="content-${post.id}">${escapeHtml(post.content)}</div>
-
-                <div class="post-actions">
-                    <button class="action-btn like ${userLikeStatus === 'like' ? 'active' : ''}" onclick="handleLike(${post.id})">
-                        👍 I Like <span id="like-count-${post.id}">${post.like || 0}</span>
-                    </button>
-                    <button class="action-btn dislike ${userLikeStatus === 'dislike' ? 'active' : ''}" onclick="handleDislike(${post.id})">
-                        👎 I Don't Like <span id="dislike-count-${post.id}">${post.d_like || 0}</span>
-                    </button>
-                    <button class="action-btn" onclick="scrollToComments(${post.id})">
-                        💬 Comment
-                    </button>
-                    <button class="action-btn" onclick="downloadPostAsPDF(event, ${post.id})">
-                        📥 Download
-                    </button>
-                    ${ownerActions}
+                    <div class="post-preview-icon">${randomIcon}</div>
+                    <div class="post-expand-icon">▼</div>
                 </div>
 
-                <div class="comments-section" id="comments-${post.id}">
-                    ${renderComments(post.commnet, post.id)}
-                    <div class="add-comment">
-                        <input
-                            type="text"
-                            class="comment-input"
-                            id="comment-input-${post.id}"
-                            placeholder="add comment"
-                        />
-                        <button class="btn-comment" onclick="addComment(${post.id})">
-                            Add
+                <div class="post-full-content">
+                    <div class="post-divider"></div>
+                    
+                    <div class="post-content" id="content-${post.id}">${linkifyText(post.content)}</div>
+
+                    <div class="post-actions">
+                        <button class="action-btn like ${userLikeStatus === 'like' ? 'active' : ''}" onclick="event.stopPropagation(); handleLike(${post.id})">
+                            👍 I Like <span id="like-count-${post.id}">${post.like || 0}</span>
                         </button>
+                        <button class="action-btn dislike ${userLikeStatus === 'dislike' ? 'active' : ''}" onclick="event.stopPropagation(); handleDislike(${post.id})">
+                            👎 I Don't Like <span id="dislike-count-${post.id}">${post.d_like || 0}</span>
+                        </button>
+                        <button class="action-btn" onclick="event.stopPropagation(); scrollToComments(${post.id})">
+                            💬 Comment
+                        </button>
+                        <button class="action-btn" onclick="event.stopPropagation(); downloadPostAsPDF(event, ${post.id})">
+                            📥 Download
+                        </button>
+                        ${ownerActions}
+                    </div>
+
+                    <div class="comments-section" id="comments-${post.id}">
+                        ${renderComments(post.commnet, post.id)}
+                        <div class="add-comment">
+                            <input
+                                type="text"
+                                class="comment-input"
+                                id="comment-input-${post.id}"
+                                placeholder="add comment"
+                                onclick="event.stopPropagation()"
+                            />
+                            <button class="btn-comment" onclick="event.stopPropagation(); addComment(${post.id})">
+                                Add
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
 
             postsContainer.appendChild(postCard);
+        }
+
+        function togglePost(postId) {
+            const postCard = document.querySelector(`[data-post-id="${postId}"]`);
+            if (postCard) {
+                postCard.classList.toggle('expanded');
+            }
         }
 
         function renderComments(commentsJSON, postId) {
@@ -1517,7 +1676,7 @@
                             ${comment.replies.map(reply => `
                                 <div class="reply-item">
                                     <div class="reply-author">${escapeHtml(reply.author)}</div>
-                                    <div class="reply-text">${escapeHtml(reply.text)}</div>
+                                    <div class="reply-text">${linkifyText(reply.text)}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -1529,7 +1688,7 @@
                                 <div class="comment-author">${escapeHtml(comment.author || 'Anonymous')}</div>
                                 ${actions}
                             </div>
-                            <div class="comment-text">${escapeHtml(comment.text || '')}</div>
+                            <div class="comment-text">${linkifyText(comment.text || '')}</div>
                             <div class="comment-footer">
                                 <button class="comment-like-btn ${hasLiked ? 'active' : ''}" onclick="likeComment(${postId}, ${idx})">
                                     👍 ${likeCount > 0 ? likeCount : ''}
@@ -2076,6 +2235,34 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        function linkifyText(text) {
+            if (!text) return '';
+            
+            // First escape HTML to prevent XSS
+            const escaped = escapeHtml(text);
+            
+            // URL pattern - matches http://, https://, and www. links
+            const urlPattern = /(\b(https?:\/\/|www\.)[^\s<]+[^\s<.,;:!?'")\]])/gi;
+            
+            // Replace URLs with clickable links
+            return escaped.replace(urlPattern, function(url) {
+                let href = url;
+                
+                // Add https:// if URL starts with www.
+                if (url.startsWith('www.')) {
+                    href = 'https://' + url;
+                }
+                
+                // Truncate display text if URL is too long
+                let displayUrl = url;
+                if (url.length > 50) {
+                    displayUrl = url.substring(0, 47) + '...';
+                }
+                
+                return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color: #7fb069; text-decoration: underline; word-break: break-all;" onclick="event.stopPropagation()">${displayUrl}</a>`;
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
